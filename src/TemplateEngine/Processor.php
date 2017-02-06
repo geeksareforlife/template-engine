@@ -3,19 +3,19 @@
 namespace GeeksAreForLife\TemplateEngine;
 
 use PhpOffice\PhpWord\TemplateProcessor;
-use GeeksAreForLife\TemplateEngine\ProcessorInterface;
 
 /**
- * Processes a template OOXML file
+ * Processes a template OOXML file.
  */
 class Processor extends TemplateProcessor implements ProcessorInterface
 {
-	/**
-     * Clone a block
+    /**
+     * Clone a block.
      *
      * @param string $blockname
-     * @param integer $clones
-     * @param boolean $replace
+     * @param int    $clones
+     * @param bool   $replace
+     *
      * @return string|null
      */
     public function cloneBlock($blockname, $clones = 1, $replace = true)
@@ -24,60 +24,55 @@ class Processor extends TemplateProcessor implements ProcessorInterface
         $xml = new \SimpleXMLElement($this->tempDocumentMainPart);
 
         // Find the starting and ending tags
-        $startNode = false; $endNode = false;
-        foreach ($xml->xpath('//w:t') as $node)
-        {
-            if (strpos($node, '${'.$blockname.'}') !== false)
-            {
+        $startNode = false;
+        $endNode = false;
+        foreach ($xml->xpath('//w:t') as $node) {
+            if (strpos($node, '${'.$blockname.'}') !== false) {
                 $startNode = $node;
                 continue;
             }
 
-            if (strpos($node, '${/'.$blockname.'}') !== false)
-            {
+            if (strpos($node, '${/'.$blockname.'}') !== false) {
                 $endNode = $node;
                 break;
             }
         }
-        
+
         // Make sure we found the tags
-        if ($startNode === false || $endNode === false)
-        {
-            return null;
+        if ($startNode === false || $endNode === false) {
+            return;
         }
 
         // Find the parent <w:p> node for the start tag
-        $node = $startNode; $startNode = null;
-        while (is_null($startNode))
-        {
+        $node = $startNode;
+        $startNode = null;
+        while (is_null($startNode)) {
             $node = $node->xpath('..')[0];
 
-            if ($node->getName() == 'p')
-            {
+            if ($node->getName() == 'p') {
                 $startNode = $node;
             }
         }
 
         // Find the parent <w:p> node for the end tag
-        $node = $endNode; $endNode = null;
-        while (is_null($endNode))
-        {
+        $node = $endNode;
+        $endNode = null;
+        while (is_null($endNode)) {
             $node = $node->xpath('..')[0];
 
-            if ($node->getName() == 'p')
-            {
+            if ($node->getName() == 'p') {
                 $endNode = $node;
             }
         }
-        
+
         /*
          * NOTE: Because SimpleXML reduces empty tags to "self-closing" tags.
          * We need to replace the original XML with the version of XML as
          * SimpleXML sees it. The following example should show the issue
          * we are facing.
-         * 
+         *
          * This is the XML that my document contained orginally.
-         * 
+         *
          * ```xml
          *  <w:p>
          *      <w:pPr>
@@ -90,9 +85,9 @@ class Processor extends TemplateProcessor implements ProcessorInterface
          *      </w:r>
          *  </w:p>
          * ```
-         * 
+         *
          * This is the XML that SimpleXML returns from asXml().
-         * 
+         *
          * ```xml
          *  <w:p>
          *      <w:pPr>
@@ -111,28 +106,23 @@ class Processor extends TemplateProcessor implements ProcessorInterface
 
         // Find the xml in between the tags
         $xmlBlock = null;
-        preg_match
-        (
+        preg_match(
             '/'.preg_quote($startNode->asXml(), '/').'(.*?)'.preg_quote($endNode->asXml(), '/').'/is',
             $this->tempDocumentMainPart,
             $matches
         );
 
-        if (isset($matches[1]))
-        {
+        if (isset($matches[1])) {
             $xmlBlock = $matches[1];
 
-            $cloned = array();
+            $cloned = [];
 
-            for ($i = 1; $i <= $clones; $i++)
-            {
-                $cloned[] = preg_replace('/\${(.*?)}/','${$1_'.$i.'}', $xmlBlock);
+            for ($i = 1; $i <= $clones; $i++) {
+                $cloned[] = preg_replace('/\${(.*?)}/', '${$1_'.$i.'}', $xmlBlock);
             }
 
-            if ($replace)
-            {
-                $this->tempDocumentMainPart = str_replace
-                (
+            if ($replace) {
+                $this->tempDocumentMainPart = str_replace(
                     $matches[0],
                     implode('', $cloned),
                     $this->tempDocumentMainPart
