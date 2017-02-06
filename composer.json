@@ -1,0 +1,22 @@
+{
+    "name": "geeksareforlife/templateengine",
+    "description": "A PHP library for processingMicrosoft Word templates, built on top of PHPWord",
+    "keywords": [ "word", "ooxml", "template" ],
+    "type": "library",
+    "license": "LGPL-3.0",
+    "authors": [
+        {
+            "name": "James Hayward",
+            "email": "jhayward1980@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3",
+        "ext-zip": "*",
+        "ext-xmlwriter": "*",
+        "phpoffice/phpword": "^0.13.0"
+    },
+    "autoload": {
+        "prs-4": { "GeeksAreForLife\\TemplateEngine\\": "src/TemplateEngine" }
+    }
+}
