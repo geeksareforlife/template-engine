@@ -1,10 +1,14 @@
 <?php
 
+namespace GeeksAreForLife\TemplateEngine;
+
 use PhpOffice\PhpWord\TemplateProcessor;
+use GeeksAreForLife\TemplateEngine\ProcessorInterface;
+
 /**
- * Override this class with a better cloneBlock function
+ * Processes a template OOXML file
  */
-class TemplateProcessor extends TemplateProcessor
+class Processor extends TemplateProcessor implements ProcessorInterface
 {
 	/**
      * Clone a block
